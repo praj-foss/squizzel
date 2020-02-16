@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Data
 public class QuestionBank {
-    private int id;
+    private Long id;
     private String name;
     private List<Question> questions;
 }

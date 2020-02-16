@@ -6,11 +6,7 @@
 package in.praj.squizzel.config;
 
 import in.praj.squizzel.data.JdbcQuestionBankDao;
-import in.praj.squizzel.data.JdbcQuestionDao;
-import in.praj.squizzel.data.JdbcQuestionTypeDao;
 import in.praj.squizzel.data.QuestionBankDao;
-import in.praj.squizzel.data.QuestionDao;
-import in.praj.squizzel.data.QuestionTypeDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,20 +52,8 @@ public class JdbcConfig {
 
     @Bean
     @Autowired
-    public QuestionTypeDao questionTypeDao(JdbcTemplate jdbc) {
-        return new JdbcQuestionTypeDao(jdbc);
-    }
-
-    @Bean
-    @Autowired
-    public QuestionDao questionDao(JdbcTemplate jdbc, QuestionTypeDao typeDao) {
-        return new JdbcQuestionDao(jdbc, typeDao);
-    }
-
-    @Bean
-    @Autowired
-    public QuestionBankDao questionBankDao(JdbcTemplate jdbc, QuestionDao questionDao) {
-        return new JdbcQuestionBankDao(jdbc, questionDao);
+    public QuestionBankDao questionBankDao(JdbcTemplate jdbc) {
+        return new JdbcQuestionBankDao(jdbc);
     }
 
     private Path appHome() {

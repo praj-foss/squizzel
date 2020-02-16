@@ -13,8 +13,8 @@ import lombok.Data;
  */
 @Data
 public class Question {
-    private int id;
-    private QuestionType type;
+    private Long id;
+    private String type;
     private String content;
     private String answer;
 }

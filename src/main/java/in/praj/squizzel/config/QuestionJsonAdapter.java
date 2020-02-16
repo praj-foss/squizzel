@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import in.praj.squizzel.model.Question;
@@ -31,7 +32,7 @@ public class QuestionJsonAdapter {
             gen.writeFieldName("id");
             gen.writeNumber(value.getId());
             gen.writeFieldName("type");
-            gen.writeString(value.getType().getName());
+            gen.writeString(value.getType());
             gen.writeFieldName("content");
             gen.writeRawValue(value.getContent());
             gen.writeFieldName("answer");
@@ -44,8 +45,13 @@ public class QuestionJsonAdapter {
         @Override
         public Question deserialize(JsonParser p, DeserializationContext ctxt)
                 throws IOException, JsonProcessingException {
-            // TODO: Implement this
-            return null;
+            final JsonNode node = p.getCodec().readTree(p);
+            final Question q = new Question();
+            q.setId(node.get("id").asLong());
+            q.setType(node.get("type").asText());
+            q.setContent(node.get("content").toString());
+            q.setAnswer(node.get("answer").toString());
+            return q;
         }
     }
 }

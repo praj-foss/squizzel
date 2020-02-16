@@ -14,8 +14,8 @@ import java.util.List;
  */
 public interface QuestionBankDao {
     List<QuestionBank> findAll();
-    List<QuestionBank> findByName(String name);
-    void insert(QuestionBank bank);
+    List<QuestionBank> findById(Integer id);
+    long insert(QuestionBank bank);
     void update(QuestionBank bank);
     void delete(QuestionBank bank);
 }
