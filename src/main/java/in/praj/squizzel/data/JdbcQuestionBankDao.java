@@ -7,12 +7,14 @@ package in.praj.squizzel.data;
 
 import in.praj.squizzel.model.Question;
 import in.praj.squizzel.model.QuestionBank;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,11 +55,11 @@ public class JdbcQuestionBankDao implements QuestionBankDao {
     @Override
     public List<QuestionBank> findAll() {
         final String sql =
-                "SELECT B.id, B.name, Q.id AS qid, T.name AS type, Q.content, Q.answer "
-              + "FROM QuestionBanks B, QuestionTypes T "
-              + "INNER JOIN Questions Q "
-              + "ON B.id = Q.bank_id "
-              + "WHERE T.id = Q.type_id";
+                "SELECT B.id, B.name, Q.id AS qid, T.name AS type, Q.content, Q.answer " +
+                "FROM QuestionBanks B, QuestionTypes T "  +
+                "INNER JOIN Questions Q " +
+                "ON B.id = Q.bank_id " +
+                "WHERE T.id = Q.type_id";
         return jdbc.query(sql, bankExtractor);
     }
 
@@ -69,19 +71,47 @@ public class JdbcQuestionBankDao implements QuestionBankDao {
 
     @Override
     public long insert(QuestionBank bank) {
-        // TODO: Make transaction and insert questions
+        // TODO: Make transaction and insert question types
         final KeyHolder holder = new GeneratedKeyHolder();
-        final String INSERT_BANK = "INSERT INTO QuestionBanks(name) VALUES (?)";
+        final String INSERT_BANK =
+                "INSERT INTO QuestionBanks(name) VALUES (?)";
+
+        final String INSERT_QUESTION =
+                "INSERT INTO Questions VALUES " +
+                "(?, ?, " +
+                " (WITH S(name) AS (VALUES ?) " +
+                "   SELECT id FROM QuestionTypes JOIN S ON QuestionTypes.name = S.name UNION " +
+                "   SELECT id FROM FINAL TABLE  " +
+                "     (MERGE INTO QuestionTypes T USING S ON T.name = S.name " +
+                "      WHEN NOT MATCHED THEN INSERT (name) VALUES (S.name))), " +
+                "? FORMAT JSON, ? FORMAT JSON)";
 
         jdbc.update(con -> {
-            final PreparedStatement ps = con.prepareStatement(
-                    INSERT_BANK,
-                    Statement.RETURN_GENERATED_KEYS);
+            final PreparedStatement ps =
+                    con.prepareStatement(INSERT_BANK, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, bank.getName());
             return ps;
         }, holder);
 
-        return holder.getKey().longValue();
+        final long bankId = holder.getKey().longValue();
+        jdbc.batchUpdate(INSERT_QUESTION, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                final Question q = bank.getQuestions().get(i);
+                ps.setLong(1, bankId);
+                ps.setLong(2, q.getId());
+                ps.setString(3, q.getType());
+                ps.setString(4, q.getContent());
+                ps.setString(5, q.getAnswer());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return bank.getQuestions().size();
+            }
+        });
+
+        return bankId;
     }
 
     @Override
