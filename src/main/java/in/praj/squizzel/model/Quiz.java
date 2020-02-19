@@ -14,8 +14,8 @@ import java.util.List;
  * a set of related questions.
  */
 @Data
-public class QuestionBank {
-    private int id;
+public class Quiz {
+    private String id;
     private String name;
     private List<Question> questions;
 }

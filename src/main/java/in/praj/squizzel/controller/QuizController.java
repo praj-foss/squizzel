@@ -5,26 +5,39 @@
 
 package in.praj.squizzel.controller;
 
-import in.praj.squizzel.data.QuestionBankDao;
-import in.praj.squizzel.model.QuestionBank;
+import in.praj.squizzel.data.QuizDao;
+import in.praj.squizzel.model.Quiz;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Endpoints for question banks.
+ * Endpoints for managing quizzes.
  */
-@Controller
+@RestController
 public class QuizController {
     @Autowired
-    private QuestionBankDao bankDao;
+    private QuizDao quizDao;
 
-    @RequestMapping("/banks")
-    @ResponseBody
-    List<QuestionBank> banks() {
-        return bankDao.findAll();
+    @GetMapping("/quizzes")
+    List<Quiz> quizzes() {
+        return quizDao.findAll();
+    }
+
+    @GetMapping("/quizzes/{id}")
+    Optional<Quiz> quizById(@PathVariable String id) {
+        return quizDao.findById(id);
+    }
+
+    @PostMapping("/quizzes")
+    Quiz createQuiz(@RequestBody Quiz quiz) {
+        quiz.setId(quizDao.insert(quiz));
+        return quiz;
     }
 }

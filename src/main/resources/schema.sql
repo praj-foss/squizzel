@@ -1,19 +1,22 @@
-CREATE TABLE IF NOT EXISTS QuestionBanks(
-    id INT IDENTITY,
+CREATE TABLE IF NOT EXISTS Quizzes(
+    id VARCHAR(10) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS QuestionTypes(
     id INT IDENTITY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS Questions(
-    id INT IDENTITY,
-    bank_id INT NOT NULL,
+    quiz_id VARCHAR(10) NOT NULL,
+    id INT NOT NULL,
     type_id INT NOT NULL,
     content JSON NOT NULL,
     answer JSON NOT NULL,
-    CONSTRAINT fk_bank FOREIGN KEY (bank_id) REFERENCES QuestionBanks(id),
-    CONSTRAINT fk_type FOREIGN KEY (type_id) REFERENCES QuestionTypes(id)
+    PRIMARY KEY (quiz_id, id),
+    CONSTRAINT fk_quiz FOREIGN KEY (quiz_id)
+        REFERENCES Quizzes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_type FOREIGN KEY (type_id)
+        REFERENCES QuestionTypes(id) ON DELETE RESTRICT
 );

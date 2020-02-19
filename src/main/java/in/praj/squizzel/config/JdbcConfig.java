@@ -5,12 +5,9 @@
 
 package in.praj.squizzel.config;
 
-import in.praj.squizzel.data.JdbcQuestionBankDao;
-import in.praj.squizzel.data.JdbcQuestionDao;
-import in.praj.squizzel.data.JdbcQuestionTypeDao;
-import in.praj.squizzel.data.QuestionBankDao;
-import in.praj.squizzel.data.QuestionDao;
-import in.praj.squizzel.data.QuestionTypeDao;
+import in.praj.squizzel.data.JdbcQuizDao;
+import in.praj.squizzel.data.QuizDao;
+import in.praj.squizzel.service.IdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +27,7 @@ import java.nio.file.Paths;
 @Configuration
 public class JdbcConfig {
     private static final Logger LOG = LoggerFactory.getLogger(JdbcConfig.class);
-    private static final String APP_HOME = ".squizzel";
+    private static final String APP_DIR = ".squizzel";
 
     @Bean
     public DataSource dataSource() {
@@ -50,29 +47,18 @@ public class JdbcConfig {
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate() {
-        return new JdbcTemplate(dataSource());
+    @Autowired
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 
     @Bean
     @Autowired
-    public QuestionTypeDao questionTypeDao(JdbcTemplate jdbc) {
-        return new JdbcQuestionTypeDao(jdbc);
-    }
-
-    @Bean
-    @Autowired
-    public QuestionDao questionDao(JdbcTemplate jdbc, QuestionTypeDao typeDao) {
-        return new JdbcQuestionDao(jdbc, typeDao);
-    }
-
-    @Bean
-    @Autowired
-    public QuestionBankDao questionBankDao(JdbcTemplate jdbc, QuestionDao questionDao) {
-        return new JdbcQuestionBankDao(jdbc, questionDao);
+    public QuizDao quizDao(JdbcTemplate jdbc, IdService idService) {
+        return new JdbcQuizDao(jdbc, idService);
     }
 
     private Path appHome() {
-        return Paths.get(System.getProperty("user.home"), APP_HOME);
+        return Paths.get(System.getProperty("user.home"), APP_DIR);
     }
 }
